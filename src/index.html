@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html class="dark">
+<head>
+    <title>Socket.IO chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/dist/output.css" rel="stylesheet">
+</head>
+<body class="bg-slate-900 overflow-hidden">
+<img src="/dist/bslogo.png" class="mx-auto" style="height: 350px;"/>
+
+<div class="grid grid-cols-3 gap-4 w-2/3 mx-auto text-center mt-4">
+    <div class="text-center bg-slate-800 text-white rounded mt-4 border-2 border-cyan-500"
+    style="box-shadow: 0 0 10px 1px rgb(6 182 212 / 0.5)">
+        <div class="mt-2" style="position: relative">
+            <img class="rounded-full mx-auto" alt="away-logo" src="" id="secondPlaceImage">
+            <span class="shadow-md rounded-full" style="position: absolute;bottom: 1px;background: silver;padding: 9px;left: 50%;margin-left: 19px;font-size: 0.8em;">2st</span>
+        </div>
+
+        <h1 class="font-bold text-3xl" id="secondPlaceName">Jane Smith</h1>
+        <p class="text-xl text-slate-400" id="secondPlaceScore">123,456</p>
+        <p id="secondPlaceSong">Ludicrous Plus Normal - FC</p>
+    </div>
+
+    <div class="text-center bg-slate-800 text-white rounded border-2 border-cyan-500"
+         style="box-shadow: 0 0 10px 1px rgb(6 182 212 / 0.5)">
+        <div class="mt-2" style="position: relative">
+            <img class="rounded-full mx-auto" alt="away-logo" src="" id="firstPlaceImage">
+            <span class="shadow-md rounded-full" style="position: absolute;bottom: 1px;background: gold;padding: 9px;left: 50%;margin-left: 19px;font-size: 0.9em;">1st</span>
+        </div>
+
+        <h1 class="font-bold text-3xl" id="firstPlaceName">Jane Smith</h1>
+        <p class="text-xl text-slate-400" id="firstPlaceScore">123,456</p>
+        <p id="firstPlaceSong">Ludicrous Plus Normal - FC</p>
+    </div>
+
+    <div class="text-center bg-slate-800 text-white rounded mt-8 border-2 border-cyan-500"
+         style="box-shadow: 0 0 10px 1px rgb(6 182 212 / 0.5)">
+        <div class="mt-2" style="position: relative">
+            <img class="rounded-full mx-auto" alt="away-logo" src="" id="thirdPlaceImage">
+            <span class="shadow-md rounded-full" style="position: absolute;bottom: 1px;background: #cd7f32;padding: 9px;left: 50%;margin-left: 19px;font-size: 0.7em;">3rd</span>
+        </div>
+
+        <h1 class="font-bold text-3xl" id="thirdPlaceName">Jane Smith</h1>
+        <p class="text-xl text-slate-400" id="thirdPlaceScore">123,456</p>
+        <p id="thirdPlaceSong">Ludicrous Plus Normal - FC</p>
+    </div>
+</div>
+
+<div class="w-3/4 h-1 my-6 bg-gradient-to-r from-red-600 bg-cyan-500 rounded mx-auto"></div>
+
+<div class="grid grid-cols-4 gap-4 mx-2 my-2">
+    <div class="rounded overflow-hidden mb-2 shadow-md text-xs bg-slate-900 border-2 border-red-600">
+        <div class="flex px-2 py-2 text-red-600 bg-slate-800">
+            <div class="w-5/6 text-xl text-left">Leaderboard 1<sup>st</sup> - 5<sup>th</sup></div>
+            <div class="w-1/6 text-right leading-7">Score</div>
+        </div>
+        <div id="leaderboard1" class="text-white"></div>
+    </div>
+
+    <div class="rounded overflow-hidden mb-2 shadow-md text-xs bg-slate-900 border-2 border-red-600">
+        <div class="flex px-2 py-2 text-red-600 bg-slate-800">
+            <div class="w-5/6 text-xl text-left">Leaderboard 6<sup>th</sup> - 10<sup>th</sup></div>
+            <div class="w-1/6 text-right leading-7">Score</div>
+        </div>
+        <div id="leaderboard2" class="text-white"></div>
+    </div>
+
+    <div class="rounded overflow-hidden mb-2 shadow-md text-xs bg-slate-900 border-2 border-cyan-500">
+        <div class="flex px-2 py-2 text-cyan-500 bg-slate-800">
+            <div class="w-5/6 text-xl text-left">Leaderboard 11<sup>th</sup> - 15<sup>th</sup></div>
+            <div class="w-1/6 text-right leading-7">Score</div>
+        </div>
+        <div id="leaderboard3" class="text-white"></div>
+    </div>
+
+    <div class="rounded overflow-hidden mb-2 shadow-md text-xs bg-slate-900 border-2 border-cyan-500">
+        <div class="flex px-2 py-2 text-cyan-500 bg-slate-800">
+            <div class="w-5/6 text-xl text-left">Leaderboard 16<sup>st</sup> - 20<sup>th</sup></div>
+            <div class="w-1/6 text-right leading-7">Score</div>
+        </div>
+        <div id="leaderboard4" class="text-white"></div>
+    </div>
+</div>
+
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/dist/md5.min.js"></script>
+<script>
+
+    var socket = io();
+    socket.on('highscores', function(leaderboards) {
+        console.log(leaderboards)
+        let sorted = {}
+        leaderboards.forEach(board => {
+            board._scores.forEach(score => {
+                // const key = score._playerName + board._leaderboardId;
+                const key = score._playerName;
+                console.log(score)
+                if (!sorted[key] || sorted[key]._score < score._score) {
+                    sorted[key] = score
+                    sorted[key]._leaderboardId = board._leaderboardId
+                }
+            })
+        })
+
+        sorted = Object.values(sorted).sort((a, b) => b._score - a._score)
+        const defaultPlayer = {_playerName: '', _score: '', _leaderboardId: '', _fullCombo: false}
+        setPlace('first', sorted[0] ?? defaultPlayer)
+        setPlace('second', sorted[1] ?? defaultPlayer)
+        setPlace('third', sorted[2] ?? defaultPlayer)
+
+        const boards = [1,2,3,4]
+        const perBoard = 5
+
+        boards.forEach(board => {
+            const leaderboard = document.getElementById(`leaderboard${board}`);
+            leaderboard.innerHTML = '';
+            sorted.slice((board -1) * perBoard, board*perBoard).forEach((details, index) => {
+                leaderboard.insertAdjacentHTML("beforeend", displayScore(((board-1) * perBoard) + index +1, details))
+            })
+        })
+    });
+
+    function setPlace(position, details) {
+        const name = document.getElementById(`${position}PlaceName`);
+        const score = document.getElementById(`${position}PlaceScore`);
+        const song = document.getElementById(`${position}PlaceSong`);
+        const img = document.getElementById(`${position}PlaceImage`);
+
+        name.textContent = details._playerName
+        score.textContent = (details._fullCombo ? '⭐' : '') + details._score.toLocaleString()
+        song.textContent = details._leaderboardId.replace(/([A-Z])/g, " $1");
+        img.src = `https://www.gravatar.com/avatar/${md5(details._playerName)}?d=monsterid&r=g&s=100`
+    }
+
+    function displayScore(position, details) {
+        return `<div class="flex py-2 items-center">
+        <div class="w-1/6 text-center text-3xl">
+            <h1>${position}</h1>
+        </div>
+        <div class="w-1/2 flex">
+            <img class="w-6 sm:w-10 mr-2 self-center rounded-full" alt="away-logo" src="https://www.gravatar.com/avatar/${md5(details._playerName)}?d=monsterid&r=g">
+            <div class="flex flex-col">
+                <p class="text-sm font-bold">${details._playerName}</p>
+                <p class="hidden sm:block text-slate-400">${details._leaderboardId.replace(/([A-Z])/g, " $1")}</p>
+            </div>
+        </div>
+        <p class="w-1/3 text-lg sm:text-xl font-bold text-right">${(details._fullCombo ? '⭐' : '') + details._score.toLocaleString() }</p>
+    </div>`
+    }
+
+</script>
+
+</body>
+</html>
