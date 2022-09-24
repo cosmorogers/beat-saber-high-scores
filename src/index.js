@@ -1,7 +1,7 @@
 const fs = require('fs');
 require('log-timestamp');
 
-const highScoresFile = 'C:\\Users\\chris\\AppData\\LocalLow\\Hyperbolic Magnetism\\Beat Saber\\LocalDailyLeaderboards.dat';
+const highScoresFile = 'C:\\Users\\cosmo\\AppData\\LocalLow\\Hyperbolic Magnetism\\Beat Saber\\LocalDailyLeaderboards.dat';
 // const highScoresFile = 'C:\\Users\\chris\\AppData\\LocalLow\\Hyperbolic Magnetism\\Beat Saber\\LocalLeaderboards.dat';
 
 console.log(`Watching for file changes on ${highScoresFile}`);
